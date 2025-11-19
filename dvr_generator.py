@@ -1,5 +1,5 @@
 from docx import Document
-from docx.shared import Pt, RGBColor, Inches
+from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from datetime import datetime
 import os
@@ -79,15 +79,14 @@ class DVRGenerator:
         # Dati rischi
         for row_idx, risk in enumerate(risks, 1):
             cells = table.rows[row_idx].cells
-            cells[0].text = risk['name']
-            cells[1].text = str(risk['probability'])
-            cells[2].text = str(risk['severity'])
-            cells[3].text = str(risk['exposure'])
+            cells[0].text = str(risk.get('type', ''))
+            cells[1].text = str(risk.get('probability', ''))
+            cells[2].text = str(risk.get('severity', ''))
+            cells[3].text = str(risk.get('exposure', ''))
             
-            risk_value = risk['probability'] * risk['severity'] * risk['exposure']
+            risk_value = int(risk.get('probability', 0)) * int(risk.get('severity', 0)) * int(risk.get('exposure', 0))
             cells[4].text = str(risk_value)
             
-            # Classificazione del rischio
             if risk_value < 15:
                 level = "BASSO"
             elif risk_value < 30:
@@ -97,22 +96,35 @@ class DVRGenerator:
             cells[5].text = level
         
         self.doc.add_paragraph()
+        
+        # Aggiunge la descrizione rischi separatamente
+        for risk in risks:
+            descrizione = risk.get('description', '').strip()
+            if descrizione:
+                self.doc.add_paragraph(f"Descrizione del rischio \"{risk.get('type', '')}\": {descrizione}")
+        self.doc.add_paragraph()
     
     def add_mitigation_section(self, mitigations):
-        """Aggiunge le misure di mitigazione"""
+        """Aggiunge le misure di mitigazione categorizzate o lista semplice"""
         self.doc.add_heading("3. MISURE DI MITIGAZIONE", level=1)
         
-        self.doc.add_heading("Misure Tecniche:", level=2)
-        for measure in mitigations.get('technical', []):
-            self.doc.add_paragraph(measure, style='List Bullet')
-        
-        self.doc.add_heading("Misure Organizzative:", level=2)
-        for measure in mitigations.get('organizational', []):
-            self.doc.add_paragraph(measure, style='List Bullet')
-        
-        self.doc.add_heading("Misure Procedurali:", level=2)
-        for measure in mitigations.get('procedural', []):
-            self.doc.add_paragraph(measure, style='List Bullet')
+        if isinstance(mitigations, dict):
+            self.doc.add_heading("Misure Tecniche:", level=2)
+            for measure in mitigations.get('technical', []):
+                self.doc.add_paragraph(measure, style='List Bullet')
+            
+            self.doc.add_heading("Misure Organizzative:", level=2)
+            for measure in mitigations.get('organizational', []):
+                self.doc.add_paragraph(measure, style='List Bullet')
+            
+            self.doc.add_heading("Misure Procedurali:", level=2)
+            for measure in mitigations.get('procedural', []):
+                self.doc.add_paragraph(measure, style='List Bullet')
+        elif isinstance(mitigations, list):
+            for measure in mitigations:
+                self.doc.add_paragraph(measure, style='List Bullet')
+        else:
+            self.doc.add_paragraph("Nessuna mitigazione disponibile.", style='List Bullet')
         
         self.doc.add_paragraph()
     
