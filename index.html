@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore DVR - Framework Integrato</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ Generatore DVR - Framework Integrato</h1>
+            <p class="subtitle">Sicurezza Aziendale Integrata (Safety + Cybersecurity)</p>
+        </header>
+
+        <div class="form-section">
+            <h2>Inserisci i Dati di Rischio</h2>
+            <form id="risk-form">
+                <div class="form-group">
+                    <label for="company-id">Azienda:</label>
+                    <select id="company-id" name="company_id" required>
+                        <option value="">Seleziona un'azienda</option>
+                        {% for azienda in aziende %}
+                            <option value="{{ azienda.id }}">{{ azienda.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="risk-type">Tipo di Rischio:</label>
+                    <select id="risk-type" name="risk_type" required>
+                        <option value="">Seleziona tipo</option>
+                        <option value="Sicurezza Fisica">Sicurezza Fisica</option>
+                        <option value="Sicurezza Informatica">Sicurezza Informatica</option>
+                        <option value="Rischio Organizzativo">Rischio Organizzativo</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="probability">Probabilità (1-5):</label>
+                        <input type="number" id="probability" name="probability" min="1" max="5" value="3" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="severity">Gravità (1-5):</label>
+                        <input type="number" id="severity" name="severity" min="1" max="5" value="3" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="exposure">Esposizione (1-5):</label>
+                        <input type="number" id="exposure" name="exposure" min="1" max="5" value="3" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Descrizione del Rischio:</label>
+                    <textarea id="description" name="description" rows="4" placeholder="Descrivi il rischio identificato"></textarea>
+                </div>
+            </form>
+        </div>
+
+        <div class="download-section">
+            <button class="download-btn" onclick="generateDVR()">
+                📄 Genera e Scarica DVR
+            </button>
+        </div>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
