@@ -13,7 +13,7 @@ def get_db_connection():
         host='localhost',
         database='dvr_db',
         user='root',
-        password='mypassword'
+        password='Esselunga2018!'
     )
 
 def get_risks_for_company(company_id):
@@ -79,16 +79,32 @@ def generate_dvr():
             for r in risks_data
         ]
 
+        # Prepara il dizionario delle mitigazioni categorizzate
+        mitigations = {
+            'technical': [],
+            'organizational': [],
+            'procedural': []
+        }
+
+        # Popola le mitigazioni con categorizzazione base tramite parole chiave
+        for risk in risks_data:
+            mitig_list = get_mitigations_for_risk(risk['id'])
+            for mitigation in mitig_list:
+                nome = mitigation['nome'].lower()
+                if any(word in nome for word in ['backup', 'firewall', 'encryption', 'antimalware', 'crittografia']):
+                    mitigations['technical'].append(mitigation['nome'])
+                elif any(word in nome for word in ['formazione', 'training', 'policy', 'procedure']):
+                    mitigations['organizational'].append(mitigation['nome'])
+                else:
+                    mitigations['procedural'].append(mitigation['nome'])
+
         # Crea istanza del generatore
         dvr = DVRGenerator()
         dvr.add_header()
         dvr.add_risk_matrix(formatted_risks)
-        
-        # Aggiungi mitigazioni se disponibili
-        for risk in risks_data:
-            mitigations = get_mitigations_for_risk(risk['id'])
-            if mitigations:
-                dvr.add_mitigation_section(mitigations)
+        dvr.add_mitigation_section(mitigations)
+        dvr.add_compliance_section()
+        dvr.add_signature_section()
 
         # Genera nome file univoco e salva
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -104,6 +120,8 @@ def generate_dvr():
             mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/add-risk', methods=['POST'])
