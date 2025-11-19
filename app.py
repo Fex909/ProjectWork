@@ -13,7 +13,7 @@ def get_db_connection():
         host='localhost',
         database='dvr_db',
         user='root',
-        password='Esselunga2018!'
+        password='mypassword'
     )
 
 def get_risks_for_company(company_id):
